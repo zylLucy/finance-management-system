@@ -1,6 +1,5 @@
-#backend/config.example.py
-#这是模板，每个人本地复制为 config.py 并填写自己的信息
-#config.py 不会上传到仓库，.gitignore 已忽略
+# 模板，每个人本地复制为 config.py 并填写自己的信息
+# config.py 不会上传到仓库，.gitignore 已忽略
 
 # 数据库配置
 DB_HOST = "localhost"
