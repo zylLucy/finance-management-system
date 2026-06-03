@@ -2,6 +2,7 @@ from fastapi import FastAPI, Body, Path, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, Column, BigInteger, String, Integer, Numeric, Date, DateTime, Text, func
 from sqlalchemy.ext.declarative import declarative_base
+from config import DB_HOST,DB_PORT,DB_USER,DB_PASS,DB_NAME
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
@@ -20,7 +21,7 @@ app.add_middleware(
 )
 
 # ====================== 数据库连接 ======================
-DATABASE_URL = "mysql+pymysql://root:%40Ljq20070501@localhost:3306/smart_ledger"
+DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
