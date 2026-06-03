@@ -5,9 +5,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
-# ==============================
+# ====================
 # 日常记账理财管理系统
-# ==============================
+# ====================
 
 app = FastAPI(title="日常记账理财管理系统", version="1.0")
 
