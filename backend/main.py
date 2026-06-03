@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 
 # ==============================
-# 日常记账理财管理系统 - 适配小组官方数据库
+# 日常记账理财管理系统
 # ==============================
 
 app = FastAPI(title="日常记账理财管理系统", version="1.0")
