@@ -17,9 +17,9 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 1. 用户数据（3个测试用户）
 -- -------------------------------------------------------------------------
 INSERT INTO `user` (`user_id`, `username`, `register_time`, `password`) VALUES
-(1, 'lsy', '2026-01-01 10:00:00', '$2b$12$demoHashForLsy1234567890abcdefghijk'),
-(2, 'zhangsan', '2026-01-02 11:00:00', '$2b$12$demoHashForZhangSan1234567890abcdefg'),
-(3, 'lisi', '2026-01-03 12:00:00', '$2b$12$demoHashForLiSi1234567890abcdefghijk');
+(1, 'lsy', '2026-01-01 10:00:00', '$2b$12$eUmPE/DBdMK1v4FHDvuwh.ltCGA2d1j20slhlaC9dCcj2WHXjiIOi'),
+(2, 'zhangsan', '2026-01-02 11:00:00', '$2b$12$eUmPE/DBdMK1v4FHDvuwh.ltCGA2d1j20slhlaC9dCcj2WHXjiIOi'),
+(3, 'lisi', '2026-01-03 12:00:00', '$2b$12$eUmPE/DBdMK1v4FHDvuwh.ltCGA2d1j20slhlaC9dCcj2WHXjiIOi');
 
 -- -------------------------------------------------------------------------
 -- 2. 系统分类（已在 schema 中插入，这里为了完整性再确认一次）

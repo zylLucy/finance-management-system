@@ -13,11 +13,24 @@ const saving = ref(false)
 const dialogVisible = ref(false)
 const categories = ref([])
 const records = ref([])
-const filters = reactive({ dateRange: [], categoryId: '', keyword: '' })
+
+function currentMonthRange() {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const firstDay = `${year}-${month}-01`
+  const lastDay = `${year}-${month}-${String(new Date(year, now.getMonth() + 1, 0).getDate()).padStart(2, '0')}`
+  return [firstDay, lastDay]
+}
+
+const filters = reactive({ dateRange: currentMonthRange(), categoryId: '', keyword: '' })
 const form = reactive({ type: 'expense', category_id: '', amount: '', date: currentDateText(), remark: '' })
 
 const enrichedRecords = computed(() => attachCategories(records.value, categories.value))
-const filteredRecords = computed(() => filterRecords(enrichedRecords.value, filters))
+const filteredRecords = computed(() => {
+  const filtered = filterRecords(enrichedRecords.value, filters)
+  return filtered.sort((a, b) => b.date.localeCompare(a.date))
+})
 const categoryOptions = computed(() => categories.value.filter((category) => category.type === form.type))
 
 function resetForm() {

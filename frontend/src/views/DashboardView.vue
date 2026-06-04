@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import ExpensePieChart from '../components/charts/ExpensePieChart.vue'
 import TrendLineChart from '../components/charts/TrendLineChart.vue'
@@ -17,9 +17,14 @@ const todayStats = ref({ income: 0, expense: 0 })
 const records = ref([])
 const categories = ref([])
 const yearMonth = ref(toYearMonth(currentMonthText()))
+const selectedMonth = ref(currentMonthText())
 
 const budgetAmount = computed(() => budgetStore.getBudget(yearMonth.value))
 const summary = computed(() => summarizeRecords(records.value, categories.value, yearMonth.value, budgetAmount.value))
+
+watch(selectedMonth, (newVal) => {
+  yearMonth.value = toYearMonth(newVal)
+})
 
 async function loadDashboard() {
   loading.value = true
@@ -45,7 +50,16 @@ onMounted(loadDashboard)
 
 <template>
   <div>
-    <h1 class="page-title">首页</h1>
+    <div class="page-header">
+      <h1 class="page-title">首页</h1>
+      <el-date-picker
+        v-model="selectedMonth"
+        type="month"
+        value-format="YYYY-MM"
+        placeholder="选择月份"
+        style="width: 200px"
+      />
+    </div>
     <el-row :gutter="16" v-loading="loading">
       <el-col :xs="24" :sm="12" :lg="6">
         <el-card class="metric-card">
@@ -81,19 +95,19 @@ onMounted(loadDashboard)
         <el-progress :percentage="Number((summary.budget.percent * 100).toFixed(1))" :status="summary.budget.percent >= 1 ? 'exception' : 'success'" />
         <p>使用率：{{ formatPercent(summary.budget.percent) }}</p>
       </div>
-      <div v-else class="empty-state">本月尚未设置预算，请到“预算设置”保存。</div>
+      <div v-else class="empty-state">本月尚未设置预算，请到"预算设置"保存。</div>
     </el-card>
 
     <el-row :gutter="16" style="margin-top: 16px">
       <el-col :xs="24" :lg="10">
         <el-card class="page-card chart-card">
-          <template #header>本月消费结构</template>
+          <template #header>{{ monthLabel(yearMonth) }}消费结构</template>
           <ExpensePieChart :data="summary.categoryExpenses" />
         </el-card>
       </el-col>
       <el-col :xs="24" :lg="14">
         <el-card class="page-card chart-card">
-          <template #header>本月每日收支趋势</template>
+          <template #header>{{ monthLabel(yearMonth) }}每日收支趋势</template>
           <TrendLineChart :trend="summary.trend" />
         </el-card>
       </el-col>

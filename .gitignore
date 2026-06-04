@@ -16,3 +16,4 @@ backend/.venv/
 backend/venv/
 frontend/vite-dev.*
 backend/backend-dev.*
+docs/环境配置问题记录.md

@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from config import DB_HOST,DB_PORT,DB_USER,DB_PASS,DB_NAME
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+import bcrypt
 
 # ====================
 # 日常记账理财管理系统
@@ -74,16 +75,19 @@ def get_db():
 
 @app.post("/user/login")
 def login(username: str = Body(...), password: str = Body(...), db = Depends(get_db)):
-    user = db.query(User).filter(User.username == username, User.password == password).first()
-    if user:
-        return {"code": 200, "msg": "登录成功", "data": {"user_id": user.user_id, "username": user.username}}
-    return {"code": 500, "msg": "账号或密码错误"}
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        return {"code": 500, "msg": "账号或密码错误"}
+    if not bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")):
+        return {"code": 500, "msg": "账号或密码错误"}
+    return {"code": 200, "msg": "登录成功", "data": {"user_id": user.user_id, "username": user.username}}
 
 @app.post("/user/register")
 def register(username: str = Body(...), password: str = Body(...), db = Depends(get_db)):
     if db.query(User).filter(User.username == username).first():
         return {"code": 500, "msg": "用户名已存在"}
-    u = User(username=username, password=password)
+    hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    u = User(username=username, password=hashed)
     db.add(u)
     db.commit()
     return {"code": 200, "msg": "注册成功"}

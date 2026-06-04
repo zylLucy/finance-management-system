@@ -49,7 +49,7 @@ CREATE TABLE `monthly_budget` (
         ON DELETE CASCADE,
 
     CONSTRAINT `chk_year_month`
-        CHECK (year_month BETWEEN 200001 AND 210012)
+        CHECK ((`year_month` BETWEEN 200001 AND 210012))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =========================================
@@ -91,7 +91,7 @@ CREATE TABLE `ai_report` (
         ON DELETE CASCADE,
 
     CONSTRAINT `chk_report_year_month`
-        CHECK (year_month BETWEEN 200001 AND 210012)
+        CHECK ((`year_month` BETWEEN 200001 AND 210012))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =========================================
