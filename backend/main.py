@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Body, Path, Query
+from fastapi import FastAPI, Body, Path, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, Column, BigInteger, String, Integer, Numeric, Date, DateTime, Text, func
 from sqlalchemy.ext.declarative import declarative_base
@@ -73,16 +73,14 @@ def get_db():
 # ====================== 接口 ======================
 
 @app.post("/user/login")
-def login(username: str = Body(...), password: str = Body(...)):
-    db = next(get_db())
+def login(username: str = Body(...), password: str = Body(...), db = Depends(get_db)):
     user = db.query(User).filter(User.username == username, User.password == password).first()
     if user:
         return {"code": 200, "msg": "登录成功", "data": {"user_id": user.user_id, "username": user.username}}
     return {"code": 500, "msg": "账号或密码错误"}
 
 @app.post("/user/register")
-def register(username: str = Body(...), password: str = Body(...)):
-    db = next(get_db())
+def register(username: str = Body(...), password: str = Body(...), db = Depends(get_db)):
     if db.query(User).filter(User.username == username).first():
         return {"code": 500, "msg": "用户名已存在"}
     u = User(username=username, password=password)
@@ -91,8 +89,7 @@ def register(username: str = Body(...), password: str = Body(...)):
     return {"code": 200, "msg": "注册成功"}
 
 @app.get("/category/list/{user_id}")
-def list_category(user_id: int = Path(...)):
-    db = next(get_db())
+def list_category(user_id: int = Path(...), db = Depends(get_db)):
     ls = db.query(Category).all()
     res = [{"id": i.category_id, "name": i.category_name, "type": i.type} for i in ls]
     return {"code": 200, "data": res}
@@ -103,9 +100,9 @@ def add_record(
     category_id: int = Body(...),
     amount: float = Body(...),
     date: str = Body(...),
-    remark: str = Body(None)
+    remark: str = Body(None),
+    db = Depends(get_db)
 ):
-    db = next(get_db())
     r = BillRecord(
         user_id=user_id,
         category_id=category_id,
@@ -118,8 +115,7 @@ def add_record(
     return {"code": 200, "msg": "记账成功"}
 
 @app.get("/record/list/{user_id}")
-def get_records(user_id: int = Path(...)):
-    db = next(get_db())
+def get_records(user_id: int = Path(...), db = Depends(get_db)):
     records = db.query(BillRecord).filter(BillRecord.user_id == user_id).all()
     res = [
         {
@@ -133,8 +129,7 @@ def get_records(user_id: int = Path(...)):
     return {"code": 200, "data": res}
 
 @app.post("/budget/save")
-def save_budget(user_id: int = Body(...), year_month: int = Body(...), amount: float = Body(...)):
-    db = next(get_db())
+def save_budget(user_id: int = Body(...), year_month: int = Body(...), amount: float = Body(...), db = Depends(get_db)):
     b = db.query(MonthlyBudget).filter(MonthlyBudget.user_id == user_id, MonthlyBudget.year_month == year_month).first()
     if b:
         b.amount = amount
@@ -145,8 +140,7 @@ def save_budget(user_id: int = Body(...), year_month: int = Body(...), amount: f
     return {"code": 200, "msg": "预算保存成功"}
 
 @app.get("/record/today/{user_id}")
-def today_stats(user_id: int = Path(...)):
-    db = next(get_db())
+def today_stats(user_id: int = Path(...), db = Depends(get_db)):
     today = datetime.now().strftime("%Y-%m-%d")
     income = db.query(func.coalesce(func.sum(BillRecord.amount), 0)).filter(
         BillRecord.user_id == user_id,
