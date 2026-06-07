@@ -24,5 +24,8 @@ export const api = {
   },
   getAiReport(userId, yearMonth) {
     return http.get(`/report/ai/${userId}/${yearMonth}`)
+  },
+  getAiYearReport(userId, year) {
+    return http.get(`/report/ai/${userId}/year/${year}`)
   }
 }
