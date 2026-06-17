@@ -13,6 +13,12 @@ export const api = {
   addRecord(record) {
     return http.post('/record/add', record)
   },
+  updateRecord(record) {
+    return http.put('/record/update', record)
+  },
+  deleteRecord(recordId) {
+    return http.delete(`/record/delete/${recordId}`)
+  },
   getRecords(userId) {
     return http.get(`/record/list/${userId}`)
   },

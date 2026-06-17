@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { api } from '../services/api'
 import { useSessionStore } from '../stores/session'
 import { currentDateText } from '../utils/date'
@@ -11,6 +11,7 @@ const session = useSessionStore()
 const loading = ref(false)
 const saving = ref(false)
 const dialogVisible = ref(false)
+const editingId = ref(null)
 const categories = ref([])
 const records = ref([])
 
@@ -32,8 +33,10 @@ const filteredRecords = computed(() => {
   return filtered.sort((a, b) => b.date.localeCompare(a.date))
 })
 const categoryOptions = computed(() => categories.value.filter((category) => category.type === form.type))
+const dialogTitle = computed(() => editingId.value ? '编辑账单' : '新增账单')
 
 function resetForm() {
+  editingId.value = null
   form.type = 'expense'
   form.category_id = ''
   form.amount = ''
@@ -62,6 +65,39 @@ function openDialog() {
   dialogVisible.value = true
 }
 
+function editRecord(row) {
+  editingId.value = row.id
+  form.type = row.type
+  form.category_id = row.category_id
+  form.amount = row.amount
+  form.date = row.date
+  form.remark = row.remark || ''
+  dialogVisible.value = true
+}
+
+async function deleteRecord(row) {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除 ${row.date} 的这条${row.type === 'income' ? '收入' : '支出'}记录（${formatMoney(row.amount)}）吗？`,
+      '删除确认',
+      { confirmButtonText: '确定删除', cancelButtonText: '取消', type: 'warning' }
+    )
+  } catch {
+    return
+  }
+
+  loading.value = true
+  try {
+    const response = await api.deleteRecord(row.id)
+    ElMessage.success(response.msg || '删除成功')
+    await loadData()
+  } catch (error) {
+    ElMessage.error(error.message)
+  } finally {
+    loading.value = false
+  }
+}
+
 async function submitRecord() {
   if (!form.category_id || !form.amount || !form.date) {
     ElMessage.warning('请填写分类、金额和日期')
@@ -70,14 +106,23 @@ async function submitRecord() {
 
   saving.value = true
   try {
-    const response = await api.addRecord({
-      user_id: session.userId,
+    const payload = {
       category_id: Number(form.category_id),
       amount: Number(Number(form.amount).toFixed(2)),
       date: form.date,
       remark: form.remark || null
-    })
-    ElMessage.success(response.msg || '记账成功')
+    }
+
+    if (editingId.value) {
+      payload.record_id = editingId.value
+      const response = await api.updateRecord(payload)
+      ElMessage.success(response.msg || '修改成功')
+    } else {
+      payload.user_id = session.userId
+      const response = await api.addRecord(payload)
+      ElMessage.success(response.msg || '记账成功')
+    }
+
     dialogVisible.value = false
     await loadData()
   } catch (error) {
@@ -117,10 +162,16 @@ onMounted(loadData)
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
+        <el-table-column label="操作" width="140" fixed="right">
+          <template #default="{ row }">
+            <el-button type="primary" link size="small" @click="editRecord(row)">编辑</el-button>
+            <el-button type="danger" link size="small" @click="deleteRecord(row)">删除</el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </el-card>
 
-    <el-dialog v-model="dialogVisible" title="新增账单" width="480px">
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="480px">
       <el-form label-position="top">
         <el-form-item label="收支类型">
           <el-radio-group v-model="form.type" @change="form.category_id = ''">

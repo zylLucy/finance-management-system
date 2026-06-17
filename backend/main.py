@@ -133,6 +133,34 @@ def add_record(
     db.commit()
     return {"code": 200, "msg": "记账成功"}
 
+@app.put("/record/update")
+def update_record(
+    record_id: int = Body(...),
+    category_id: int = Body(...),
+    amount: float = Body(...),
+    date: str = Body(...),
+    remark: str = Body(None),
+    db = Depends(get_db)
+):
+    r = db.query(BillRecord).filter(BillRecord.record_id == record_id).first()
+    if not r:
+        return {"code": 500, "msg": "账单记录不存在"}
+    r.category_id = category_id
+    r.amount = amount
+    r.date = date
+    r.remark = remark
+    db.commit()
+    return {"code": 200, "msg": "修改成功"}
+
+@app.delete("/record/delete/{record_id}")
+def delete_record(record_id: int = Path(...), db = Depends(get_db)):
+    r = db.query(BillRecord).filter(BillRecord.record_id == record_id).first()
+    if not r:
+        return {"code": 500, "msg": "账单记录不存在"}
+    db.delete(r)
+    db.commit()
+    return {"code": 200, "msg": "删除成功"}
+
 @app.get("/record/list/{user_id}")
 def get_records(user_id: int = Path(...), db = Depends(get_db)):
     records = db.query(BillRecord).filter(BillRecord.user_id == user_id).all()
